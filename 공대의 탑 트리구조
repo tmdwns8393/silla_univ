@@ -1,51 +1,98 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#define _CRT_SECURE_NO_WARNINGS
+#include <time.h>
 
+// 트리 노드 구조체
 typedef struct TreeNode {
-    char data[100];
-    struct TreeNode* leftleft;
-    struct TreeNode* left;
-    struct TreeNode* right;
-    struct TreeNode* rightright;
-
+    const char* question; // 문제
+    const char* answer1; // 1번 보기
+    const char* answer2; // 2번 보기
+    const char* answer3; // 3번 보기
+    const char* answer4; // 4번 보기
+    int correctAnswer; // 정답 번호 (1 ~ 4)
+    struct TreeNode* yes; // 정답일 경우 이동할 노드
+    struct TreeNode* no; // 오답일 경우 이동할 노드
 } TreeNode;
 
-TreeNode* create_node(const char* data, TreeNode* left, TreeNode* right, TreeNode* leftleft, TreeNode* rightright) {
+// 노드 생성 함수
+TreeNode* createNode(const char* question, const char* answer1, const char* answer2, const char* answer3, const char* answer4, int correctAnswer, TreeNode* yes, TreeNode* no) {
     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));
-    if (node == NULL) return NULL;
-    strcpy_s(node->data, data);
-    node->left = left;
-    node->right = right;
-    node->leftleft = leftleft;
-    node->rightright = rightright;
+    node->question = question;
+    node->answer1 = answer1;
+    node->answer2 = answer2;
+    node->answer3 = answer3;
+    node->answer4 = answer4;
+    node->correctAnswer = correctAnswer;
+    node->yes = yes;
+    node->no = no;
     return node;
 }
 
-TreeNode* make_tree() {
-    TreeNode* q1 = create_node("C언어는 어느 기업에서 개발되었나요?", NULL, NULL, NULL, NULL);
-    TreeNode* q2 = create_node("C언어의 창시자는 누구인가요?", NULL, NULL, NULL, NULL);
-    TreeNode* q3 = create_node("다음 중 C언어의 특징이 아닌 것은 무엇인가요?", NULL, NULL, NULL, NULL);
-    TreeNode* q4 = create_node("C언어에서 사용하는 변수의 유효 범위는?", NULL, NULL, NULL, NULL);
+// 게임 플레이 함수
+void play(TreeNode* node, int* score) {
+    if (node->yes == NULL && node->no == NULL) { // leaf node인 경우
+        printf("%s\n", node->question);
 
-    TreeNode* a1 = create_node("AT&T 벨 연구소", NULL, NULL, NULL, NULL);
-    TreeNode* a2 = create_node("데니스 리치", NULL, NULL, NULL, NULL);
-    TreeNode* a3 = create_node("객체 지향 프로그래밍 지원", NULL, NULL, NULL, NULL);
-    TreeNode* a4 = create_node("블록 내에서 지역 변수, 함수 내에서 전역 변수", NULL, NULL, NULL, NULL);
+        int answer;
+        scanf("%d", &answer);
 
-    TreeNode* b1 = create_node("IBM", a1, a2, NULL, NULL);
-    TreeNode* b2 = create_node("제임스 고슬링", NULL, NULL, NULL, NULL);
-    TreeNode* b3 = create_node("저수준 프로그래밍 가능", a3, NULL, NULL, NULL);
-    TreeNode* b4 = create_node("블록 내에서 지역 변수, 파일 내에서 전역 변수", a4, NULL, NULL, NULL);
+        if (answer < 1 || answer > 4) {
+            printf("잘못된 입력입니다. 1 ~ 4 중 하나를 입력해주세요.\n");
+            play(node, score);
+            return;
+        }
 
-    TreeNode* c1 = create_node("벨 연구소", b1, b2, NULL, NULL);
-    TreeNode* c2 = create_node("브라이언 커니핸", b3, NULL, NULL, NULL);
-    TreeNode* c3 = create_node("가비지 컬렉션 지원", b4, NULL, NULL, NULL);
-    TreeNode* c4 = create_node("블록 내에서 전역 변수, 함수 내에서 지역 변수", NULL, NULL, NULL, NULL);
+        if (answer == node->correctAnswer) {
+            printf("정답입니다!\n");
+            (*score) += 0.5; // 점수 추가
+        }
+        else {
+            printf("오답입니다. 정답은 %d번입니다.\n", node->correctAnswer);
+        }
 
-    TreeNode* root = create_node("C언어 퀴즈입니다. 다음 중 하나를 선택하세요.", c1, c2, NULL, NULL);
-    root->right = create_node("C언어 퀴즈입니다. 다음 중 하나를 선택하세요.", c3, c4, NULL, NULL);
+        return;
+    }
 
-    return root;
+    printf("%c\n", node->question);
+    printf("1. %c\n2. %c\n3. %c\n4. %c\n", node->answer1, node->answer2, node->answer3, node->answer4);
+
+    int answer;
+    scanf("%d", &answer);
+
+    if (answer < 1 || answer > 4) {
+        printf("잘못된 입력입니다. 1 ~ 4 중 하나를 입력해주세요.\n");
+        play(node, score);
+        return;
+    }
+
+    if (answer == node->correctAnswer) {
+        printf("정답입니다!\n");
+        (*score) += 0.5; // 점수 추가
+        play(node->yes, score);
+    }
+    else {
+        printf("오답입니다. 정답은 %d번입니다.\n", node->correctAnswer);
+        play(node->no, score);
+    }
+}
+
+int main() {
+    // 트리 구조 생성
+    TreeNode* root = createNode("1. 다음 중 C언어에서 사용되는데이터 타입이 아닌 것은 무엇일까요?", "char", "integer", "float", "book", 4, NULL, NULL);
+    TreeNode* root = createNode("2. C언어에서 사용되는 대표적인 연산자는 무엇일까요?", "+", "-", "*", "/", 3, , NULL, NULL);
+    TreeNode* root = createNode("3. 다음 중 C언어에서 제공하는 제어문이 아닌 것은 무엇일까요?", "if문", "for문", "while문", "repeat문", 4, NULL, NULL);
+   
+
+    // 랜덤 시드 설정
+    srand(time(NULL));
+
+    int score = 0;
+    printf("C언어 퀴즈 게임을 시작합니다!\n");
+    printf("4지선다 문제에 대해 1 ~ 4 중 하나를 입력해주세요.\n");
+    printf("-----------------------------------------\n");
+    play(root, &score);
+    printf("-----------------------------------------\n");
+    printf("게임 종료! 총 점수는 %.1f점입니다.\n", score);
+
+    return 0;
 }
