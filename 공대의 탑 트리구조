@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#define _CRT_SECURE_NO_WARNINGS
 // 트리 노드 구조체
 typedef struct TreeNode {
     const char* question; // 문제
@@ -29,12 +29,12 @@ TreeNode* createNode(const char* question, const char* answer1, const char* answ
 }
 
 // 게임 플레이 함수
-void play(TreeNode* node, int* score) {
+void play(TreeNode* node, float* score) {
     if (node->yes == NULL && node->no == NULL) { // leaf node인 경우
         printf("%s\n", node->question);
 
         int answer;
-        scanf("%d", &answer);
+        scanf_s("%d", &answer);
 
         if (answer < 1 || answer > 4) {
             printf("잘못된 입력입니다. 1 ~ 4 중 하나를 입력해주세요.\n");
@@ -53,11 +53,11 @@ void play(TreeNode* node, int* score) {
         return;
     }
 
-    printf("%c\n", node->question);
-    printf("1. %c\n2. %c\n3. %c\n4. %c\n", node->answer1, node->answer2, node->answer3, node->answer4);
+    printf("%s\n", node->question);
+    printf("1. %s\n2. %s\n3. %s\n4. %s\n", node->answer1, node->answer2, node->answer3, node->answer4);
 
     int answer;
-    scanf("%d", &answer);
+    scanf_s("%d", &answer);
 
     if (answer < 1 || answer > 4) {
         printf("잘못된 입력입니다. 1 ~ 4 중 하나를 입력해주세요.\n");
@@ -77,16 +77,26 @@ void play(TreeNode* node, int* score) {
 }
 
 int main() {
-    // 트리 구조 생성
-    TreeNode* root = createNode("1. 다음 중 C언어에서 사용되는데이터 타입이 아닌 것은 무엇일까요?", "char", "integer", "float", "book", 4, NULL, NULL);
-    TreeNode* root = createNode("2. C언어에서 사용되는 대표적인 연산자는 무엇일까요?", "+", "-", "*", "/", 3, , NULL, NULL);
-    TreeNode* root = createNode("3. 다음 중 C언어에서 제공하는 제어문이 아닌 것은 무엇일까요?", "if문", "for문", "while문", "repeat문", 4, NULL, NULL);
-   
+    TreeNode* root = createNode("1. 다음 중 C언어에서 사용되는 헤더파일은?", "<stdio.h>", "<stdlib.h>", "<math.h>", "<string.h>", 1, NULL, NULL);
+    root->yes = createNode("2. 다음 중 C언어의 주석 처리 방식은?", "/* ... */", "// ...", "<!-- ... -->", "% ...", 2, NULL, NULL);
+    root->no = createNode("2. 다음 중 C언어에서 사용되는 변수 타입은?", "integer", "char", "float", "double", 2, NULL, NULL);
+
+    root->yes->yes = createNode("3. 다음 중 C언어에서 사용되는 조건문은?", "if문", "for문", "while문", "switch문", 4, NULL, NULL);
+    root->yes->no = createNode("3. 다음 중 C언어에서 사용되는 반복문은?", "if문", "for문", "while문", "switch문", 2, NULL, NULL);
+
+    root->no->yes = createNode("3. 다음 중 C언어에서 사용되는 반복문은?", "if문", "for문", "while문", "switch문", 3, NULL, NULL);
+    root->no->no = createNode("3. 다음 중 C언어에서 사용되는 데이터 형식 변환 함수는?", "atoi()", "itoa()", "atof()", "scanf()", 1, NULL, NULL);
+
+    root->yes->yes->yes = createNode("4. 다음 중 C언어에서 사용되는 비교 연산자는?", "==", "+", "*", "/", 1, NULL, NULL);
+    root->yes->yes->no = createNode("4. 다음 중 C언어에서 사용되는 논리 연산자는?", "&", "|", "^", "&&", 4, NULL, NULL);
+
+    root->no->yes->yes = createNode("4. 다음 중 C언어에서 사용되는 제어문은?", "if문", "for문", "while문", "return문", 4, NULL, NULL);
+    root->no->yes->no = createNode("4. 다음 중 C언어에서 사용되는 논리 연산자는?", "&", "|", "^", "&&", 4, NULL, NULL);
 
     // 랜덤 시드 설정
     srand(time(NULL));
 
-    int score = 0;
+    float score = 0;
     printf("C언어 퀴즈 게임을 시작합니다!\n");
     printf("4지선다 문제에 대해 1 ~ 4 중 하나를 입력해주세요.\n");
     printf("-----------------------------------------\n");
