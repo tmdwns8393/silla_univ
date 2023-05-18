@@ -4,16 +4,24 @@
 #include <stdbool.h>
 #define _CRT_SECURE_NO_WARNINGS
 
+typedef enum ProblemType {
+    MULTIPLE_CHOICE,
+    MAZE_ESCAPE
+} ProblemType;
+
 typedef struct TreeNode {
+    ProblemType type;
     char question[100];
     char choices[4][50];
     int answer;
     struct TreeNode* left;
     struct TreeNode* right;
+    int maze[5][5];
 } TreeNode;
 
-TreeNode* createQuestionNode(const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
+TreeNode* createQuestionNode(ProblemType type, const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
     TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
+    newNode->type = type;
     strcpy_s(newNode->question, question);
     strcpy_s(newNode->choices[0], choice1);
     strcpy_s(newNode->choices[1], choice2);
@@ -30,10 +38,81 @@ void addQuestion(TreeNode* root, TreeNode* left, TreeNode* right) {
     root->right = right;
 }
 
+void printMaze(int maze[][5], int numRows, int numCols, int playerRow, int playerCol) {
+    for (int row = 0; row < numRows; row++) {
+        for (int col = 0; col < numCols; col++) {
+            if (row == playerRow && col == playerCol) {
+                printf("P ");
+            }
+            else if (maze[row][col] == 0) {
+                printf("_ ");
+            }
+            else {
+                printf("# ");
+            }
+        }
+        printf("\n");
+    }
+}
+
+void handleMazeProblem(TreeNode* currentNode) {
+    int numRows = 5;
+    int numCols = 5;
+    int playerRow = 0;
+    int playerCol = 0;
+
+    while (playerRow != numRows - 1 || playerCol != numCols - 1) {
+        system("cls");
+        printf("이동할 방향을 입력하세요 (w: 상, a: 좌, s: 하, d: 우, q: 종료): \n");
+        printMaze(currentNode->maze, numRows, numCols, playerRow, playerCol);
+
+        char input;
+        scanf_s(" %c", &input, 1);
+
+        if (input == 'q') {
+            printf("미로 탈출을 포기하셨습니다.\n");
+            return;
+        }
+
+        int newRow = playerRow;
+        int newCol = playerCol;
+
+        if (input == 'w') {
+            newRow--;
+        }
+        else if (input == 'a') {
+            newCol--;
+        }
+        else if (input == 's') {
+            newRow++;
+        }
+        else if (input == 'd') {
+            newCol++;
+        }
+
+        if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols && currentNode->maze[newRow][newCol] == 0) {
+            playerRow = newRow;
+            playerCol = newCol;
+        }
+    }
+
+    printf("축하합니다! 미로를 탈출했습니다!\n");
+}
+
 int main() {
-    TreeNode* root = createQuestionNode("1+1?", "1", "2", "3", "4", 2);
-    TreeNode* node1 = createQuestionNode("2+2?", "1", "2", "3", "4", 4);
-    TreeNode* node2 = createQuestionNode("3+3?", "1", "6", "9", "12", 2);
+    TreeNode* root = createQuestionNode(MULTIPLE_CHOICE, "1+1?", "1", "2", "3", "4", 2);
+    TreeNode* node1 = createQuestionNode(MULTIPLE_CHOICE, "2+2?", "1", "2", "3", "4", 4);
+    TreeNode* node2 = createQuestionNode(MAZE_ESCAPE, "이 미로를 탈출해 보세요.", "", "", "", "", -1);
+
+    /* 미로 배열 초기화 예시 */
+    int maze[5][5] = {
+        {0, 1, 0, 0, 0},
+        {0, 1, 0, 1, 0},
+        {0, 0, 0, 0, 0},
+        {0, 1, 1, 1, 1},
+        {0, 0, 0, 0, 0}
+    };
+    memcpy(node2->maze, maze, sizeof(maze));
 
     addQuestion(root, node1, node2);
 
@@ -42,20 +121,27 @@ int main() {
 
     while (currentNode != NULL) {
         printf("%s\n", currentNode->question);
-        for (int i = 0; i < 4; ++i) {
-            printf("%d. %s\n", i + 1, currentNode->choices[i]);
+
+        if (currentNode->type == MULTIPLE_CHOICE) {
+            for (int i = 0; i < 4; ++i) {
+                printf("%d. %s\n", i + 1, currentNode->choices[i]);
+            }
+
+            int userAnswer;
+            printf("Enter your answer (1-4): ");
+            scanf_s("%d", &userAnswer);
+
+            if (userAnswer == currentNode->answer) {
+                score += 0.5;
+                printf("Correct!\n");
+            }
+            else {
+                printf("Incorrect. The correct answer is %d.\n", currentNode->answer);
+            }
         }
-
-        int userAnswer;
-        printf("Enter your answer (1-4): ");
-        scanf_s("%d", &userAnswer);
-
-        if (userAnswer == currentNode->answer) {
+        else if (currentNode->type == MAZE_ESCAPE) {
+            handleMazeProblem(currentNode);
             score += 0.5;
-            printf("Correct!\n");
-        }
-        else {
-            printf("Incorrect. The correct answer is %d.\n", currentNode->answer);
         }
 
         int direction;
