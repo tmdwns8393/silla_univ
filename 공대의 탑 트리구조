@@ -16,7 +16,7 @@ typedef struct TreeNode {
     int answer;
     struct TreeNode* left;
     struct TreeNode* right;
-    int maze[5][5];
+    int maze[10][10];
 } TreeNode;
 
 TreeNode* createQuestionNode(ProblemType type, const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
@@ -38,7 +38,7 @@ void addQuestion(TreeNode* root, TreeNode* left, TreeNode* right) {
     root->right = right;
 }
 
-void printMaze(int maze[][5], int numRows, int numCols, int playerRow, int playerCol) {
+void printMaze(int maze[][10], int numRows, int numCols, int playerRow, int playerCol) {
     for (int row = 0; row < numRows; row++) {
         for (int col = 0; col < numCols; col++) {
             if (row == playerRow && col == playerCol) {
@@ -56,8 +56,8 @@ void printMaze(int maze[][5], int numRows, int numCols, int playerRow, int playe
 }
 
 void handleMazeProblem(TreeNode* currentNode) {
-    int numRows = 5;
-    int numCols = 5;
+    int numRows = 10;
+    int numCols = 10;
     int playerRow = 0;
     int playerCol = 0;
 
@@ -105,12 +105,17 @@ int main() {
     TreeNode* node2 = createQuestionNode(MAZE_ESCAPE, "이 미로를 탈출해 보세요.", "", "", "", "", -1);
 
     /* 미로 배열 초기화 예시 */
-    int maze[5][5] = {
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 1, 0},
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 1},
-        {0, 0, 0, 0, 0}
+    int maze[10][10] = {
+     {0, 1, 0, 0, 0, 1, 1, 0, 0, 0},
+     {0, 1, 1, 1, 0, 1, 0, 0, 1, 0},
+     {0, 0, 0, 1, 0, 1, 1, 1, 1, 0},
+     {1, 1, 0, 1, 0, 0, 0, 0, 1, 0},
+     {0, 1, 0, 1, 1, 1, 1, 0, 1, 0},
+     {0, 1, 0, 1, 0, 0, 0, 0, 1, 0},
+     {0, 0, 0, 0, 0, 1, 1, 1, 1, 0},
+     {1, 1, 0, 1, 0, 0, 0, 0, 1, 1},
+     {0, 1, 0, 1, 1, 1, 1, 0, 0, 0},
+     {0, 0, 0, 0, 1, 1, 1, 0, 1, 0}
     };
     memcpy(node2->maze, maze, sizeof(maze));
 
