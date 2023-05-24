@@ -2,20 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <Windows.h>
 #define _CRT_SECURE_NO_WARNINGS
 
 typedef enum ProblemType {
     MULTIPLE_CHOICE,
-    MAZE_ESCAPE
+    MAZE_ESCAPE,
+    DICE_ROLL
 } ProblemType;
 
 typedef struct TreeNode {
     ProblemType type;
-    char question[100];
+    char question[10000];
     char choices[4][50];
     int answer;
     struct TreeNode* left;
     struct TreeNode* right;
+    double point;
     int maze[10][10];
 } TreeNode;
 
@@ -99,10 +102,35 @@ void handleMazeProblem(TreeNode* currentNode) {
     printf("축하합니다! 미로를 탈출했습니다!\n");
 }
 
+int rollDice() {
+    return rand() % 6 + 1;
+}
+
+void handleDiceRoll(TreeNode* currentNode) {
+    printf("주사위를 굴리셨습니다. 숫자를 확인하겠습니다.\n");
+
+    Sleep(1800);
+
+    int diceRoll = rollDice();
+    printf("주사위 숫자: %d\n", diceRoll);
+
+    if (diceRoll >= 4) {
+        printf("찍어서 정답을 맞췄다!!\n 정답입니다!");
+        currentNode->point = 0.5;
+    }
+    else {
+        printf("찍신은 나를 도와주지 않았다...\n 문제를 틀렸습니다.\n");
+        currentNode->point = 0.0;
+    }
+}
+
+
+
 int main() {
     TreeNode* root = createQuestionNode(MULTIPLE_CHOICE, "1+1?", "1", "2", "3", "4", 2);
     TreeNode* node1 = createQuestionNode(MULTIPLE_CHOICE, "2+2?", "1", "2", "3", "4", 4);
     TreeNode* node2 = createQuestionNode(MAZE_ESCAPE, "이 미로를 탈출해 보세요.", "", "", "", "", -1);
+    TreeNode* node3 = createQuestionNode(DICE_ROLL, "가장 어려운 마지막 문제에 도착했다. 교수님은 이걸 어떻게 풀으라고 내신거지...? 못적는거보단 찍는게 더 나으려나?", "찍는다", "그래도 모르니까 포기한다", "", "", 0);
 
     /* 미로 배열 초기화 예시 */
     int maze[10][10] = {
@@ -119,7 +147,10 @@ int main() {
     };
     memcpy(node2->maze, maze, sizeof(maze));
 
-    addQuestion(root, node1, node2);
+    addQuestion(root, node1, NULL);
+    addQuestion(node1, node2, NULL);
+    addQuestion(node2, node3, NULL);
+    addQuestion(node3, NULL, NULL);
 
     TreeNode* currentNode = root;
     double score = 0;
@@ -133,38 +164,66 @@ int main() {
             }
 
             int userAnswer;
-            printf("Enter your answer (1-4): ");
+            printf("정답을 입력해주세요. (1-4) : ");
             scanf_s("%d", &userAnswer);
 
             if (userAnswer == currentNode->answer) {
-                score += 0.5;
-                printf("Correct!\n");
-            }
-            else {
-                printf("Incorrect. The correct answer is %d.\n", currentNode->answer);
+                currentNode->point = 0.5;
+                printf("정답입니다 !\n");
             }
         }
         else if (currentNode->type == MAZE_ESCAPE) {
             handleMazeProblem(currentNode);
-            score += 0.5;
+            currentNode->point = 0.5;
+        }
+        else if (currentNode->type == DICE_ROLL) {
+            int dice_select;
+            printf("당신의 선택은? (1:찍는다 , 2:모르는 문제니까 그냥 포기한다) : ");
+            scanf_s("%d", &dice_select);
+
+            if (dice_select == 1) {
+                int last_chance;
+                printf("정말로 찍어볼까...? (1:못먹어도 고! , 2: 아니다 그냥 포기하자...");
+                scanf_s("%d", &last_chance);
+
+                if (last_chance == 1) {
+                    handleDiceRoll(currentNode);
+                }
+                if (last_chance == 2) {
+                    printf("마지막 문제를 포기했다.");
+                }
+            }
+            else if (dice_select == 2) {
+                int last_chance2;
+                printf("찍어서 틀리나, 못적어서 틀리나 틀리는건 똑같을건데 한번 찍어봐...? (1: 그래 한번 찍어보자. , 2: 포기한다.");
+                    scanf_s("%d", &last_chance2);
+                    if (last_chance2 == 1) {
+                        handleDiceRoll(currentNode);
+                    }
+                    if (last_chance2 == 2) {
+                        printf("마지막 문제를 포기했다.");
+                    }
+            }
         }
 
+        score += currentNode->point;
+
         int direction;
-        printf("Choose your next question (1:left, 2:right, 3:exit): ");
+        printf("어떻게 할 것인지 선택하세요. (1:다음 문제 도전! , 2: 난 여기까지인가봐... 포기한다.): ");
         scanf_s("%d", &direction);
 
         if (direction == 1) {
+            system("cls");
             currentNode = currentNode->left;
+
         }
         else if (direction == 2) {
+            system("cls");
             currentNode = currentNode->right;
-        }
-        else {
-            currentNode = NULL;
         }
     }
 
-    printf("Your final score is: %.1f\n", score);
+    printf("당신의 기말고사 성적은  %.1f 입니다.\n", score);
 
     return 0;
 }
