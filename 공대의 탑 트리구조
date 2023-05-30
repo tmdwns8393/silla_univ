@@ -1,229 +1,405 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <stdbool.h>
+#include <conio.h>
 #include <Windows.h>
 #define _CRT_SECURE_NO_WARNINGS
 
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+#define SUBMIT 4
+
+void init() {
+	system("mode con cols = 56 lines = 20 | title 알고리즘의 탑");
+
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO ConsoleCursor;
+	ConsoleCursor.bVisible = 0;
+	ConsoleCursor.dwSize = 1;
+	SetConsoleCursorInfo(consoleHandle, &ConsoleCursor);
+
+}
+
 typedef enum ProblemType {
-    MULTIPLE_CHOICE,
-    MAZE_ESCAPE,
-    DICE_ROLL
+	MULTIPLE_CHOICE,
+	MAZE_ESCAPE,
+	DICE_ROLL
 } ProblemType;
 
 typedef struct TreeNode {
-    ProblemType type;
-    char question[10000];
-    char choices[4][50];
-    int answer;
-    struct TreeNode* left;
-    struct TreeNode* right;
-    double point;
-    int maze[10][10];
+	ProblemType type;
+	char question[10000];
+	char choices[4][50];
+	int answer;
+	struct TreeNode* left;
+	struct TreeNode* right;
+	double point =0;
+	int maze[10][10];
 } TreeNode;
 
 TreeNode* createQuestionNode(ProblemType type, const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
-    TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
-    newNode->type = type;
-    strcpy_s(newNode->question, question);
-    strcpy_s(newNode->choices[0], choice1);
-    strcpy_s(newNode->choices[1], choice2);
-    strcpy_s(newNode->choices[2], choice3);
-    strcpy_s(newNode->choices[3], choice4);
-    newNode->answer = answer;
-    newNode->left = NULL;
-    newNode->right = NULL;
-    return newNode;
+	TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
+	newNode->type = type;
+	strcpy_s(newNode->question, question);
+	strcpy_s(newNode->choices[0], choice1);
+	strcpy_s(newNode->choices[1], choice2);
+	strcpy_s(newNode->choices[2], choice3);
+	strcpy_s(newNode->choices[3], choice4);
+	newNode->answer = answer;
+	newNode->left = NULL;
+	newNode->right = NULL;
+	return newNode;
 }
 
 void addQuestion(TreeNode* root, TreeNode* left, TreeNode* right) {
-    root->left = left;
-    root->right = right;
+	root->left = left;
+	root->right = right;
 }
 
 void printMaze(int maze[][10], int numRows, int numCols, int playerRow, int playerCol) {
-    for (int row = 0; row < numRows; row++) {
-        for (int col = 0; col < numCols; col++) {
-            if (row == playerRow && col == playerCol) {
-                printf("P ");
-            }
-            else if (maze[row][col] == 0) {
-                printf("_ ");
-            }
-            else {
-                printf("# ");
-            }
-        }
-        printf("\n");
-    }
+	for (int row = 0; row < numRows; row++) {
+		for (int col = 0; col < numCols; col++) {
+			if (row == playerRow && col == playerCol) {
+				printf("P ");
+			}
+			else if (maze[row][col] == 0) {
+				printf("_ ");
+			}
+			else {
+				printf("# ");
+			}
+		}
+		printf("\n");
+	}
 }
 
-void handleMazeProblem(TreeNode* currentNode) {
-    int numRows = 10;
-    int numCols = 10;
-    int playerRow = 0;
-    int playerCol = 0;
+	void handleMazeProblem(TreeNode * currentNode) {
+		int numRows = 10;
+		int numCols = 10;
+		int playerRow = 0;
+		int playerCol = 0;
 
-    while (playerRow != numRows - 1 || playerCol != numCols - 1) {
-        system("cls");
-        printf("이동할 방향을 입력하세요 (w: 상, a: 좌, s: 하, d: 우, q: 종료): \n");
-        printMaze(currentNode->maze, numRows, numCols, playerRow, playerCol);
+		while (playerRow != numRows - 1 || playerCol != numCols - 1) {
+			system("cls");
+			printf("이동할 방향을 입력하세요 (w: 상, a: 좌, s: 하, d: 우, q: 종료): \n");
+			printMaze(currentNode->maze, numRows, numCols, playerRow, playerCol);
 
-        char input;
-        scanf_s(" %c", &input, 1);
+			char input = getchar();
 
-        if (input == 'q') {
-            printf("미로 탈출을 포기하셨습니다.\n");
-            return;
-        }
+			if (input == 'q') {
+				printf("미로 탈출을 포기하셨습니다.\n");
+				return;
+			}
 
-        int newRow = playerRow;
-        int newCol = playerCol;
+			int newRow = playerRow;
+			int newCol = playerCol;
 
-        if (input == 'w') {
-            newRow--;
-        }
-        else if (input == 'a') {
-            newCol--;
-        }
-        else if (input == 's') {
-            newRow++;
-        }
-        else if (input == 'd') {
-            newCol++;
-        }
+			if (input == 'w') {
+				newRow--;
+			}
+			else if (input == 'a') {
+				newCol--;
+			}
+			else if (input == 's') {
+				newRow++;
+			}
+			else if (input == 'd') {
+				newCol++;
+			}
 
-        if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols && currentNode->maze[newRow][newCol] == 0) {
-            playerRow = newRow;
-            playerCol = newCol;
-        }
-    }
+			if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols && currentNode->maze[newRow][newCol] == 0) {
+				playerRow = newRow;
+				playerCol = newCol;
+			}
+		}
 
-    printf("축하합니다! 미로를 탈출했습니다!\n");
-}
+	printf("축하합니다! 미로를 탈출했습니다!\n");
+	}
+
 
 int rollDice() {
-    return rand() % 6 + 1;
+	return rand() % 6 + 1;
 }
 
 void handleDiceRoll(TreeNode* currentNode) {
-    printf("주사위를 굴리셨습니다. 숫자를 확인하겠습니다.\n");
+	printf("주사위를 굴리셨습니다. 숫자를 확인하겠습니다.\n");
 
-    Sleep(1800);
+	Sleep(1800);
 
-    int diceRoll = rollDice();
-    printf("주사위 숫자: %d\n", diceRoll);
+	int diceRoll = rollDice();
+	printf("주사위 숫자: %d\n", diceRoll);
 
-    if (diceRoll >= 4) {
-        printf("찍어서 정답을 맞췄다!!\n 정답입니다!");
-        currentNode->point = 0.5;
-    }
-    else {
-        printf("찍신은 나를 도와주지 않았다...\n 문제를 틀렸습니다.\n");
-        currentNode->point = 0.0;
-    }
+	if (diceRoll >= 4) {
+		printf("찍어서 정답을 맞췄다!!\n 정답입니다!");
+		currentNode->point = 0.5;
+	}
+	else {
+		printf("찍신은 나를 도와주지 않았다...\n 문제를 틀렸습니다.\n");
+		currentNode->point = 0.0;
+	}
+}
+
+void gotoxy(int x, int y) {
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD pos;
+	pos.X = x;
+	pos.Y = y;
+	SetConsoleCursorPosition(consoleHandle, pos);
+}
+
+void titleDraw() {
+	printf("\n\n\n\n");
+	printf("       ####    #                              #     ###########                                   ##########   # \n");
+	printf("      #    #   #      #########    ########   #          #              #####     #               #            #\n");
+	printf("      #    #   ###            #           #   #         # #            #     #    #               ##########   ####\n");
+	printf("      #    #   #        #     #           #   #        #   #           #     #    #               #            #\n");
+	printf("       ####    #        #     #    ########   #                         #####     #               ##########   #\n");
+	printf("                        #     #    #          #   ################                #                            \n");
+	printf("        #######         #          ########   #                      ##############                 #         #\n");
+	printf("              #    ##############             #     ###########                   #                 #         #\n");
+	printf("        ######                                      #         #                   #                 ###########\n");
+	printf("        #                                           #         #                                     #         #\n");
+	printf("         ######                                     ###########                                     ###########\n");
+}
+
+int keyControl() {
+	char temp = _getch();
+
+	if (temp == 'w' || temp == 'W') {
+		return UP;
+	}
+	else if (temp == 'a' || temp == 'A') {
+		return LEFT;
+	}
+	else if (temp == 's' || temp == 'S') {
+		return DOWN;
+	}
+	else if (temp == 'd' || temp == 'D') {
+		return RIGHT;
+	}
+	else if (temp == ' ') {
+		return SUBMIT;
+	}
+}
+
+int menuDraw() {
+	int x = 54;
+	int y = 20;
+
+	gotoxy(54 - 2, 20);
+	printf("> 게 임 시 작 ");
+	gotoxy(54, 21);
+	printf("게 임 정 보 ");
+	gotoxy(54, 22);
+	printf("   종 료     ");
+	while (1) {
+		int n = keyControl();
+		switch (n) {
+		case UP: {
+			if (y > 20) {
+				gotoxy(x - 2, y);
+				printf(" ");
+				gotoxy(x - 2, --y);
+				printf(">");
+			}
+			break;
+		}
+		case DOWN: {
+			if (y < 22) {
+				gotoxy(x - 2, y);
+				printf(" ");
+				gotoxy(x - 2, ++y);
+				printf(">");
+			}
+			break;
+		}
+		case SUBMIT: {
+			return y - 20;
+		}
+		}
+	}
+}
+
+void infoDraw() {
+	system("cls");
+	printf(" \n\n\n\n\n\n\n\n\n");
+	printf("                                                       [ 조작법 ]\n\n");
+	printf("                                                  이동 : W, A, S, D\n");
+	printf("                                                  선택 : 스페이스바\n\n\n\n\n\n\n\n");
+	printf("                                             개발자 : 강민기, 명세진, 이승준 \n\n");
+	printf("                                       스페이스바를 누르면 메인화면으로 이동합니다.");
+
+	while (1) {
+		if (keyControl() == SUBMIT) {
+			break;
+		}
+	}
 }
 
 
+void MainStory() {
+	system("cls");
+	const char* script = "부스스 눈을 뜨고 일어나자마자 언제나처럼 휴대폰을 켰다.\n평소와는 다르게 엄청나게 많은 알림이 울렸다.\n수많은 알림 중 찾아낸 교수님의 공지 \n\n '이번 기말고사는 제가 개발한 알고리즘의 탑을 전부 클리어하는 사람에게 조건없이 A+을 주겠습니다.' \n\n 누가 보더라도 엄청난 사건임이 틀림 없었다! 탑을 오르는 것 만으로 성적을 받을 수 있다고...?\n 하지만 상대는 교수님이야. 탑 안에는 우리가 배운 문제들로 가득 차 있을거야. \n준비를 단단히 하고 출발하자.\n\n\n 스페이스바를 눌러 탑으로 들어가세요.";
+	int length = strlen(script);
+	for (int i = 0; i < length; i++) {
+		printf("%c", script[i]);
+		Sleep(30);
+	}
+	while (1) {
+		if (keyControl() == SUBMIT) {
+			break;
+		}
+	}
+}
 
-int main() {
-    TreeNode* root = createQuestionNode(MULTIPLE_CHOICE, "1+1?", "1", "2", "3", "4", 2);
-    TreeNode* node1 = createQuestionNode(MULTIPLE_CHOICE, "2+2?", "1", "2", "3", "4", 4);
-    TreeNode* node2 = createQuestionNode(MAZE_ESCAPE, "이 미로를 탈출해 보세요.", "", "", "", "", -1);
-    TreeNode* node3 = createQuestionNode(DICE_ROLL, "가장 어려운 마지막 문제에 도착했다. 교수님은 이걸 어떻게 풀으라고 내신거지...? 못적는거보단 찍는게 더 나으려나?", "찍는다", "그래도 모르니까 포기한다", "", "", 0);
+int GamePlay() {
+	system("cls");
+	
+	TreeNode* root = createQuestionNode(MULTIPLE_CHOICE, "트리의 용어들중에서 부모가 없는 노드를 무엇이라고 하는가?", "서브트리", "루트", "차수", "레벨", 2);
+	TreeNode* node1 = createQuestionNode(MULTIPLE_CHOICE, "복잡하지만 효율적인 알고리즘 방법이 아닌 것은?", "퀵 정렬", "히프 정렬", "합병 정렬", "버블 정렬", 4);
+	TreeNode* node2 = createQuestionNode(MULTIPLE_CHOICE, "하나의 시작 정점으로부터 모든 다른 정점까지의 최단 경로를 찾는 알고리즘은?", "Dijkstra", "Prim", "Kruskal", "Floyd", 1);
+	TreeNode* node3 = createQuestionNode(MULTIPLE_CHOICE, "정점의 개수를 n, 간선의 개수 e인 그래프를 인접리스트로 표현하였을 경우, 인접 리스트 상의 총 노드의 개수는?", "O(n)", "O(n+e)", "O(e)", "O(1)", 1);
+	TreeNode* node4 = createQuestionNode(MAZE_ESCAPE, "이 미로를 탈출해 보세요.", "", "", "", "", -1);
+	TreeNode* node5 = createQuestionNode(MULTIPLE_CHOICE, "Y = A * B + C / D를 전위 표기 수식으로 표기하면?", "A * B C D /+ ", "+* C D / A B", "+* A B / C D", "* + / A B C D", 3);
+	TreeNode* node6 = createQuestionNode(MULTIPLE_CHOICE, "다음 중 큐를 사용하는 알고리즘은?", "깊이 우선 탐색", "너비 우선 탐색", "최단 거리 알고리즘", "최소 비용 신장 트리", 2);
+	TreeNode* node7 = createQuestionNode(MULTIPLE_CHOICE, "이진트리는 각 글자의 빈도가 알려져 있는 메시지의 내용을 압축하는데 사용되는 이진트리를 무엇이라고 하는가?", "머쉰 스케줄링", "허프만 코드", "스레드 이진 트리", "포화이진트리", 2);
+	TreeNode* node8 = createQuestionNode(DICE_ROLL, "가장 어려운 마지막 문제에 도착했다. 교수님은 이걸 어떻게 풀으라고 내신거지...? 못적는거보단 찍는게 더 나으려나?", "찍는다", "그래도 모르니까 포기한다", "", "", 0);
 
-    /* 미로 배열 초기화 예시 */
-    int maze[10][10] = {
-     {0, 1, 0, 0, 0, 1, 1, 0, 0, 0},
-     {0, 1, 1, 1, 0, 1, 0, 0, 1, 0},
-     {0, 0, 0, 1, 0, 1, 1, 1, 1, 0},
-     {1, 1, 0, 1, 0, 0, 0, 0, 1, 0},
-     {0, 1, 0, 1, 1, 1, 1, 0, 1, 0},
-     {0, 1, 0, 1, 0, 0, 0, 0, 1, 0},
-     {0, 0, 0, 0, 0, 1, 1, 1, 1, 0},
-     {1, 1, 0, 1, 0, 0, 0, 0, 1, 1},
-     {0, 1, 0, 1, 1, 1, 1, 0, 0, 0},
-     {0, 0, 0, 0, 1, 1, 1, 0, 1, 0}
-    };
-    memcpy(node2->maze, maze, sizeof(maze));
+	/* 미로 배열 초기화 예시 */
+	int maze[10][10] = {
+	 {0, 1, 0, 0, 0, 1, 1, 0, 0, 0},
+	 {0, 1, 1, 1, 0, 1, 0, 0, 1, 0},
+	 {0, 0, 0, 1, 0, 1, 1, 1, 1, 0},
+	 {1, 1, 0, 1, 0, 0, 0, 0, 1, 0},
+	 {0, 1, 0, 1, 1, 1, 1, 0, 1, 0},
+	 {0, 1, 0, 1, 0, 0, 0, 0, 1, 0},
+	 {0, 0, 0, 0, 0, 1, 1, 1, 1, 0},
+	 {1, 1, 0, 1, 0, 0, 0, 0, 1, 1},
+	 {0, 1, 0, 1, 1, 1, 1, 0, 0, 0},
+	 {0, 0, 0, 0, 1, 1, 1, 0, 1, 0}
+	};
+	memcpy(node4->maze, maze, sizeof(maze));
 
-    addQuestion(root, node1, NULL);
-    addQuestion(node1, node2, NULL);
-    addQuestion(node2, node3, NULL);
-    addQuestion(node3, NULL, NULL);
+	addQuestion(root, node1, NULL);
+	addQuestion(node1, node2, NULL);
+	addQuestion(node2, node3, NULL);
+	addQuestion(node3, node4, NULL);
+	addQuestion(node4, node5, NULL);
+	addQuestion(node5, node6, NULL);
+	addQuestion(node6, node7, NULL);
+	addQuestion(node7, node8, NULL);
+	addQuestion(node8, NULL, NULL);
+	
+	TreeNode* currentNode = root;
+	currentNode->point = 0;
+	double score = 0;
+	
+	while (currentNode != NULL) {
+		printf("%s\n", currentNode->question);
 
-    TreeNode* currentNode = root;
-    double score = 0;
+		if (currentNode->type == MULTIPLE_CHOICE) {
+			for (int i = 0; i < 4; ++i) {
+				printf("%d. %s\n", i + 1, currentNode->choices[i]);
+			}
 
-    while (currentNode != NULL) {
-        printf("%s\n", currentNode->question);
+			int userAnswer;
+			printf("정답을 입력해주세요. (1-4) : ");
+			scanf_s("%d", &userAnswer);
 
-        if (currentNode->type == MULTIPLE_CHOICE) {
-            for (int i = 0; i < 4; ++i) {
-                printf("%d. %s\n", i + 1, currentNode->choices[i]);
-            }
+			if (userAnswer == currentNode->answer) {
+				currentNode->point = 0.5;
+				score += currentNode->point;
+			}
+		}
+		else if (currentNode->type == MAZE_ESCAPE) {
+			handleMazeProblem(currentNode);
+			currentNode->point = 0.5;
+		}
+		else if (currentNode->type == DICE_ROLL) {
+			int dice_select;
+			printf("당신의 선택은? (1:찍는다 , 2:모르는 문제니까 그냥 포기한다) : ");
+			scanf_s("%d", &dice_select);
 
-            int userAnswer;
-            printf("정답을 입력해주세요. (1-4) : ");
-            scanf_s("%d", &userAnswer);
+			if (dice_select == 1) {
+				int last_chance;
+				printf("정말로 찍어볼까...? (1:못먹어도 고! , 2: 아니다 그냥 포기하자...");
+				scanf_s("%d", &last_chance);
 
-            if (userAnswer == currentNode->answer) {
-                currentNode->point = 0.5;
-                printf("정답입니다 !\n");
-            }
-        }
-        else if (currentNode->type == MAZE_ESCAPE) {
-            handleMazeProblem(currentNode);
-            currentNode->point = 0.5;
-        }
-        else if (currentNode->type == DICE_ROLL) {
-            int dice_select;
-            printf("당신의 선택은? (1:찍는다 , 2:모르는 문제니까 그냥 포기한다) : ");
-            scanf_s("%d", &dice_select);
+				if (last_chance == 1) {
+					handleDiceRoll(currentNode);
+				}
+				if (last_chance == 2) {
+					printf("마지막 문제를 포기했다.");
+				}
+			}
+			else if (dice_select == 2) {
+				int last_chance2;
+				printf("찍어서 틀리나, 못적어서 틀리나 틀리는건 똑같을건데 한번 찍어봐...? (1: 그래 한번 찍어보자. , 2: 포기한다.");
+				scanf_s("%d", &last_chance2);
+				if (last_chance2 == 1) {
+					handleDiceRoll(currentNode);
+				}
+				if (last_chance2 == 2) {
+					printf("마지막 문제를 포기했다.");
+				}
+			}
+		}
 
-            if (dice_select == 1) {
-                int last_chance;
-                printf("정말로 찍어볼까...? (1:못먹어도 고! , 2: 아니다 그냥 포기하자...");
-                scanf_s("%d", &last_chance);
+		int direction;
+		printf("어떻게 할 것인지 선택하세요. (1:다음 문제 도전! , 2: 난 여기까지인가봐... 포기한다.): ");
+		scanf_s("%d", &direction);
 
-                if (last_chance == 1) {
-                    handleDiceRoll(currentNode);
-                }
-                if (last_chance == 2) {
-                    printf("마지막 문제를 포기했다.");
-                }
-            }
-            else if (dice_select == 2) {
-                int last_chance2;
-                printf("찍어서 틀리나, 못적어서 틀리나 틀리는건 똑같을건데 한번 찍어봐...? (1: 그래 한번 찍어보자. , 2: 포기한다.");
-                    scanf_s("%d", &last_chance2);
-                    if (last_chance2 == 1) {
-                        handleDiceRoll(currentNode);
-                    }
-                    if (last_chance2 == 2) {
-                        printf("마지막 문제를 포기했다.");
-                    }
-            }
-        }
+		if (direction == 1) {
+			system("cls");
+			currentNode = currentNode->left;
 
-        score += currentNode->point;
+		}
+		else if (direction == 2) {
+			system("cls");
+			currentNode = currentNode->right;
+		}
+	}
 
-        int direction;
-        printf("어떻게 할 것인지 선택하세요. (1:다음 문제 도전! , 2: 난 여기까지인가봐... 포기한다.): ");
-        scanf_s("%d", &direction);
+	const char* script = "당신의 최종 성적은........ ";
+	int length = strlen(script);
+	for (int i = 0; i < length; i++) {
+		printf("%c", script[i]);
+		Sleep(30);
+	}
+	Sleep(3000);
+	printf("%.1f 입니다\n\n\n\n\n\n\n\n\n\n", score);
 
-        if (direction == 1) {
-            system("cls");
-            currentNode = currentNode->left;
+	printf("스페이스바를 눌러 메인화면으로 나가기");
+	while (1) {
+		if (keyControl() == SUBMIT) {
+			break;
+		}
+	}
+	return 0;
+}
 
-        }
-        else if (direction == 2) {
-            system("cls");
-            currentNode = currentNode->right;
-        }
-    }
+int main()
+{
+	init();
+	while (1) {
+		titleDraw();
+		int menuCode = 	menuDraw();
+		if (menuCode == 0) {
+			MainStory();
+			GamePlay();
+		}
+		else if (menuCode == 1) {
+			infoDraw();
+		}
+		else if (menuCode == 2){
+			return 0;
+		}
+		system("cls");
+	}
 
-    printf("당신의 기말고사 성적은  %.1f 입니다.\n", score);
-
-    return 0;
+	return 0;
 }
