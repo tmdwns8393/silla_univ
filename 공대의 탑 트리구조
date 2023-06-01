@@ -13,17 +13,6 @@
 #define RIGHT 3
 #define SUBMIT 4
 
-void init() {
-	system("mode con cols = 56 lines = 20 | title 알고리즘의 탑");
-
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO ConsoleCursor;
-	ConsoleCursor.bVisible = 0;
-	ConsoleCursor.dwSize = 1;
-	SetConsoleCursorInfo(consoleHandle, &ConsoleCursor);
-
-}
-
 typedef enum ProblemType {
 	MULTIPLE_CHOICE,
 	MAZE_ESCAPE,
@@ -37,110 +26,19 @@ typedef struct TreeNode {
 	int answer;
 	struct TreeNode* left;
 	struct TreeNode* right;
-	double point =0;
+	double point = 0;
 	int maze[10][10];
 } TreeNode;
 
-TreeNode* createQuestionNode(ProblemType type, const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
-	TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
-	newNode->type = type;
-	strcpy_s(newNode->question, question);
-	strcpy_s(newNode->choices[0], choice1);
-	strcpy_s(newNode->choices[1], choice2);
-	strcpy_s(newNode->choices[2], choice3);
-	strcpy_s(newNode->choices[3], choice4);
-	newNode->answer = answer;
-	newNode->left = NULL;
-	newNode->right = NULL;
-	return newNode;
-}
+void init() {
+	system("mode con cols = 56 lines = 20 | title 알고리즘의 탑");
 
-void addQuestion(TreeNode* root, TreeNode* left, TreeNode* right) {
-	root->left = left;
-	root->right = right;
-}
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO ConsoleCursor;
+	ConsoleCursor.bVisible = 0;
+	ConsoleCursor.dwSize = 1;
+	SetConsoleCursorInfo(consoleHandle, &ConsoleCursor);
 
-void printMaze(int maze[][10], int numRows, int numCols, int playerRow, int playerCol) {
-	for (int row = 0; row < numRows; row++) {
-		for (int col = 0; col < numCols; col++) {
-			if (row == playerRow && col == playerCol) {
-				printf("P ");
-			}
-			else if (maze[row][col] == 0) {
-				printf("_ ");
-			}
-			else {
-				printf("# ");
-			}
-		}
-		printf("\n");
-	}
-}
-
-	void handleMazeProblem(TreeNode * currentNode) {
-		int numRows = 10;
-		int numCols = 10;
-		int playerRow = 0;
-		int playerCol = 0;
-
-		while (playerRow != numRows - 1 || playerCol != numCols - 1) {
-			system("cls");
-			printf("이동할 방향을 입력하세요 (w: 상, a: 좌, s: 하, d: 우, q: 종료): \n");
-			printMaze(currentNode->maze, numRows, numCols, playerRow, playerCol);
-
-			char input = getchar();
-
-			if (input == 'q') {
-				printf("미로 탈출을 포기하셨습니다.\n");
-				return;
-			}
-
-			int newRow = playerRow;
-			int newCol = playerCol;
-
-			if (input == 'w') {
-				newRow--;
-			}
-			else if (input == 'a') {
-				newCol--;
-			}
-			else if (input == 's') {
-				newRow++;
-			}
-			else if (input == 'd') {
-				newCol++;
-			}
-
-			if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols && currentNode->maze[newRow][newCol] == 0) {
-				playerRow = newRow;
-				playerCol = newCol;
-			}
-		}
-
-	printf("축하합니다! 미로를 탈출했습니다!\n");
-	}
-
-
-int rollDice() {
-	return rand() % 6 + 1;
-}
-
-void handleDiceRoll(TreeNode* currentNode) {
-	printf("주사위를 굴리셨습니다. 숫자를 확인하겠습니다.\n");
-
-	Sleep(1800);
-
-	int diceRoll = rollDice();
-	printf("주사위 숫자: %d\n", diceRoll);
-
-	if (diceRoll >= 4) {
-		printf("찍어서 정답을 맞췄다!!\n 정답입니다!");
-		currentNode->point = 0.5;
-	}
-	else {
-		printf("찍신은 나를 도와주지 않았다...\n 문제를 틀렸습니다.\n");
-		currentNode->point = 0.0;
-	}
 }
 
 void gotoxy(int x, int y) {
@@ -240,10 +138,112 @@ void infoDraw() {
 	}
 }
 
+TreeNode* createQuestionNode(ProblemType type, const char* question, const char* choice1, const char* choice2, const char* choice3, const char* choice4, int answer) {
+	TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
+	newNode->type = type;
+	strcpy_s(newNode->question, question);
+	strcpy_s(newNode->choices[0], choice1);
+	strcpy_s(newNode->choices[1], choice2);
+	strcpy_s(newNode->choices[2], choice3);
+	strcpy_s(newNode->choices[3], choice4);
+	newNode->answer = answer;
+	newNode->left = NULL;
+	newNode->right = NULL;
+	return newNode;
+}
+
+void addQuestion(TreeNode* root, TreeNode* left, TreeNode* right) {
+	root->left = left;
+	root->right = right;
+}
+
+void printMaze(int maze[][10], int numRows, int numCols, int playerRow, int playerCol) {
+	for (int row = 0; row < numRows; row++) {
+		for (int col = 0; col < numCols; col++) {
+			if (row == playerRow && col == playerCol) {
+				printf("P ");
+			}
+			else if (maze[row][col] == 0) {
+				printf("_ ");
+			}
+			else {
+				printf("# ");
+			}
+		}
+		printf("\n");
+	}
+}
+
+void handleMazeProblem(TreeNode* currentNode) {
+	int numRows = 10;
+	int numCols = 10;
+	int playerRow = 0;
+	int playerCol = 0;
+
+	while (playerRow != numRows - 1 || playerCol != numCols - 1) {
+		system("cls");
+		printf("이동할 방향을 입력하세요 (w: 상, a: 좌, s: 하, d: 우, q: 종료): \n");
+		printMaze(currentNode->maze, numRows, numCols, playerRow, playerCol);
+
+		char input = _getch();
+
+		if (input == 'q') {
+			printf("미로 탈출을 포기하셨습니다.\n");
+			return;
+		}
+
+		int newRow = playerRow;
+		int newCol = playerCol;
+
+		if (input == 'w') {
+			newRow--;
+		}
+		else if (input == 'a') {
+			newCol--;
+		}
+		else if (input == 's') {
+			newRow++;
+		}
+		else if (input == 'd') {
+			newCol++;
+		}
+
+		if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols && currentNode->maze[newRow][newCol] == 0) {
+			playerRow = newRow;
+			playerCol = newCol;
+		}
+	}
+
+	printf("축하합니다! 미로를 탈출했습니다!\n");
+}
+
+
+int rollDice() {
+	srand(time(NULL));
+	return rand() % 6 + 1;
+}
+
+void handleDiceRoll(TreeNode* currentNode) {
+	printf("주사위를 굴리셨습니다. 숫자를 확인하겠습니다.\n");
+
+	Sleep(1800);
+
+	int diceRoll = rollDice();
+	printf("주사위 숫자: %d\n", diceRoll);
+
+	if (diceRoll >= 4) {
+		printf("찍어서 정답을 맞췄다!!\n 정답입니다!");
+		currentNode->point = 0.5;
+	}
+	else {
+		printf("찍신은 나를 도와주지 않았다...\n 문제를 틀렸습니다.\n");
+		currentNode->point = 0.0;
+	}
+}
 
 void MainStory() {
 	system("cls");
-	const char* script = "부스스 눈을 뜨고 일어나자마자 언제나처럼 휴대폰을 켰다.\n평소와는 다르게 엄청나게 많은 알림이 울렸다.\n수많은 알림 중 찾아낸 교수님의 공지 \n\n '이번 기말고사는 제가 개발한 알고리즘의 탑을 전부 클리어하는 사람에게 조건없이 A+을 주겠습니다.' \n\n 누가 보더라도 엄청난 사건임이 틀림 없었다! 탑을 오르는 것 만으로 성적을 받을 수 있다고...?\n 하지만 상대는 교수님이야. 탑 안에는 우리가 배운 문제들로 가득 차 있을거야. \n준비를 단단히 하고 출발하자.\n\n\n 스페이스바를 눌러 탑으로 들어가세요.";
+	const char* script = " 부스스 눈을 뜨고 일어나자마자 언제나처럼 휴대폰을 켰다.\n 평소와는 다르게 엄청나게 많은 알림이 울렸다.\n 수많은 알림 중 찾아낸 교수님의 공지 \n\n '이번 기말고사는 제가 개발한 알고리즘의 탑을 전부 클리어하는 사람에게 조건없이 A+을 주겠습니다.' \n\n 누가 보더라도 엄청난 사건임이 틀림 없었다! 탑을 오르는 것 만으로 성적을 받을 수 있다고...?\n 하지만 상대는 교수님이야. 탑 안에는 우리가 배운 문제들로 가득 차 있을거야. \n 준비를 단단히 하고 출발하자.\n\n\n 스페이스바를 눌러 탑으로 들어가세요.";
 	int length = strlen(script);
 	for (int i = 0; i < length; i++) {
 		printf("%c", script[i]);
@@ -258,7 +258,7 @@ void MainStory() {
 
 int GamePlay() {
 	system("cls");
-	
+
 	TreeNode* root = createQuestionNode(MULTIPLE_CHOICE, "트리의 용어들중에서 부모가 없는 노드를 무엇이라고 하는가?", "서브트리", "루트", "차수", "레벨", 2);
 	TreeNode* node1 = createQuestionNode(MULTIPLE_CHOICE, "복잡하지만 효율적인 알고리즘 방법이 아닌 것은?", "퀵 정렬", "히프 정렬", "합병 정렬", "버블 정렬", 4);
 	TreeNode* node2 = createQuestionNode(MULTIPLE_CHOICE, "하나의 시작 정점으로부터 모든 다른 정점까지의 최단 경로를 찾는 알고리즘은?", "Dijkstra", "Prim", "Kruskal", "Floyd", 1);
@@ -293,11 +293,11 @@ int GamePlay() {
 	addQuestion(node6, node7, NULL);
 	addQuestion(node7, node8, NULL);
 	addQuestion(node8, NULL, NULL);
-	
+
 	TreeNode* currentNode = root;
 	currentNode->point = 0;
 	double score = 0;
-	
+
 	while (currentNode != NULL) {
 		printf("%s\n", currentNode->question);
 
@@ -318,6 +318,7 @@ int GamePlay() {
 		else if (currentNode->type == MAZE_ESCAPE) {
 			handleMazeProblem(currentNode);
 			currentNode->point = 0.5;
+			score += currentNode->point;
 		}
 		else if (currentNode->type == DICE_ROLL) {
 			int dice_select;
@@ -342,6 +343,10 @@ int GamePlay() {
 				scanf_s("%d", &last_chance2);
 				if (last_chance2 == 1) {
 					handleDiceRoll(currentNode);
+					if (currentNode->point = 0.5)
+					{
+						score += currentNode->point;
+					}
 				}
 				if (last_chance2 == 2) {
 					printf("마지막 문제를 포기했다.");
@@ -387,7 +392,7 @@ int main()
 	init();
 	while (1) {
 		titleDraw();
-		int menuCode = 	menuDraw();
+		int menuCode = menuDraw();
 		if (menuCode == 0) {
 			MainStory();
 			GamePlay();
@@ -395,7 +400,7 @@ int main()
 		else if (menuCode == 1) {
 			infoDraw();
 		}
-		else if (menuCode == 2){
+		else if (menuCode == 2) {
 			return 0;
 		}
 		system("cls");
